@@ -1,15 +1,4 @@
-// Copyright (c) 2020 Facebook, Inc. and its affiliates.
-// All rights reserved.
-//
-// This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree.
-
 package org.pytorch.demo.objectdetection;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Context;
@@ -29,6 +18,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
@@ -47,7 +41,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private int mImageIndex = 0;
-    private String[] mTestImages = {"test1.png", "test2.jpg", "test3.png"};
 
     private ImageView mImageView;
     private ResultView mResultView;
@@ -90,37 +83,22 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         setContentView(R.layout.activity_main);
 
-        try {
-            mBitmap = BitmapFactory.decodeStream(getAssets().open(mTestImages[mImageIndex]));
-        } catch (IOException e) {
-            Log.e("Object Detection", "Error reading assets", e);
-            finish();
-        }
-
         mImageView = findViewById(R.id.imageView);
         mImageView.setImageBitmap(mBitmap);
         mResultView = findViewById(R.id.resultView);
         mResultView.setVisibility(View.INVISIBLE);
 
+        //Button RSSI
         final Button buttonTest = findViewById(R.id.testButton);
-        buttonTest.setText(("Test Image 1/3"));
         buttonTest.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
-                mResultView.setVisibility(View.INVISIBLE);
-                mImageIndex = (mImageIndex + 1) % mTestImages.length;
-                buttonTest.setText(String.format("Text Image %d/%d", mImageIndex + 1, mTestImages.length));
-
-                try {
-                    mBitmap = BitmapFactory.decodeStream(getAssets().open(mTestImages[mImageIndex]));
-                    mImageView.setImageBitmap(mBitmap);
-                } catch (IOException e) {
-                    Log.e("Object Detection", "Error reading assets", e);
-                    finish();
-                }
+                Intent intent = new Intent(MainActivity.this, MainActivity_scanwifi.class);
+                startActivity(intent);
             }
         });
 
-
+        //Button Select
         final Button buttonSelect = findViewById(R.id.selectButton);
         buttonSelect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -150,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         });
 
+        //Button Live
         final Button buttonLive = findViewById(R.id.liveButton);
         buttonLive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
