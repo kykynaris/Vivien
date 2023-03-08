@@ -6,7 +6,7 @@
     tools:context=".MainActivity_scanwifi">
 
     <Button
-        android:id="@+id/scanButton"
+        android:id="@+id/scan_Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Scan"
@@ -17,7 +17,7 @@
         android:id="@+id/wifiListRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/scanButton"
+        android:layout_below="@id/scan_Button"
         android:layout_marginTop="16dp"/>
 
 </RelativeLayout>
