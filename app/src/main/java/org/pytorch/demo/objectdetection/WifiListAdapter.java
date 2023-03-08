@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiListViewHolder> {
+public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.ViewHolder> {
+
     private List<ScanResult> wifiList;
 
     public WifiListAdapter(List<ScanResult> wifiList) {
@@ -20,17 +21,18 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiLi
 
     @NonNull
     @Override
-    public WifiListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.wifi_list_item, parent, false);
-        return new WifiListViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull WifiListViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ScanResult wifi = wifiList.get(position);
-        holder.wifiSsid.setText(wifi.SSID);
-        holder.wifiBssid.setText(wifi.BSSID);
-        holder.wifiRssi.setText(String.format("%d dBm", wifi.level));
+
+        holder.ssidTextView.setText(wifi.SSID);
+        holder.bssidTextView.setText(wifi.BSSID);
+        holder.rssiTextView.setText(String.valueOf(wifi.level));
     }
 
     @Override
@@ -44,18 +46,19 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiLi
         notifyDataSetChanged();
     }
 
-    public static class WifiListViewHolder extends RecyclerView.ViewHolder {
-        private TextView wifiSsid;
-        private TextView wifiBssid;
-        private TextView wifiRssi;
 
-        public WifiListViewHolder(@NonNull View itemView) {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        public TextView ssidTextView;
+        public TextView bssidTextView;
+        public TextView rssiTextView;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            wifiSsid = itemView.findViewById(R.id.wifi_ssid);
-            wifiBssid = itemView.findViewById(R.id.wifi_bssid);
-            wifiRssi = itemView.findViewById(R.id.wifi_rssi);
+
+            ssidTextView = itemView.findViewById(R.id.wifi_ssid);
+            bssidTextView = itemView.findViewById(R.id.wifi_bssid);
+            rssiTextView = itemView.findViewById(R.id.wifi_rssi);
         }
     }
-
 }
-
