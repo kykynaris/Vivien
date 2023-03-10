@@ -12,6 +12,7 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,6 +39,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private int mImageIndex = 0;
@@ -52,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Bitmap mBitmap = null;
     private Module mModule = null;
     private float mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY;
+
+    private TextToSpeech texttospeech;
+    private String textmainmenu = "Hello, my name is Vivian. I am your guide";
+    private String textfindpositioning = "Vivian would like to check your current position for a moment.";
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
@@ -90,6 +96,21 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mImageView.setImageBitmap(mBitmap);
         mResultView = findViewById(R.id.resultView);
         mResultView.setVisibility(View.INVISIBLE);
+
+        //TTS
+        texttospeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+
+                // if No error is found then only it will run
+                if(i!=TextToSpeech.ERROR){
+                    // To Choose language of speech
+                    texttospeech.setLanguage(Locale.ENGLISH);
+                    texttospeech.speak(textmainmenu, TextToSpeech.QUEUE_FLUSH, null);
+                    texttospeech.speak(textfindpositioning, TextToSpeech.QUEUE_ADD, null);
+                }
+            }
+        });
 
         //Button RSSI
         final Button buttonTest = findViewById(R.id.testButton);
