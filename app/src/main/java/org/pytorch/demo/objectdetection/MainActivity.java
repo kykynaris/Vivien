@@ -11,6 +11,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -41,7 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements Runnable {
+public class MainActivity extends AppCompatActivity
+        implements Runnable, VoiceControl.TextToSpeechListener {
     private int mImageIndex = 0;
 
     private static String[] checkpermission = {Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -54,8 +57,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Bitmap mBitmap = null;
     private Module mModule = null;
     private float mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY;
-
-    private TextToSpeech texttospeech;
+    private VoiceControl texttospeech;
     private String textmainmenu = "Hello, my name is Vivian. I am your guide";
     private String textfindpositioning = "Vivian would like to check your current position for a moment.";
 
@@ -98,19 +100,25 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mResultView.setVisibility(View.INVISIBLE);
 
         //TTS
-        texttospeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int i) {
-
-                // if No error is found then only it will run
-                if(i!=TextToSpeech.ERROR){
-                    // To Choose language of speech
-                    texttospeech.setLanguage(Locale.ENGLISH);
-                    texttospeech.speak(textmainmenu, TextToSpeech.QUEUE_FLUSH, null);
-                    texttospeech.speak(textfindpositioning, TextToSpeech.QUEUE_ADD, null);
-                }
-            }
-        });
+        texttospeech = new VoiceControl(this, this);
+//        texttospeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+//            @Override
+//            public void onInit(int i) {
+//
+//                // if No error is found then only it will run
+//                if(i!=TextToSpeech.ERROR){
+//                    // To Choose language of speech
+//                    texttospeech.setLanguage(Locale.ENGLISH);
+//                    new Handler().postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            texttospeech.speak(textmainmenu, TextToSpeech.QUEUE_FLUSH, null);
+//                        }
+//                    }, 3000);
+//                    texttospeech.speak(textfindpositioning, TextToSpeech.QUEUE_FLUSH, null);
+//                }
+//            }
+//        });
 
         //Button RSSI
         final Button buttonTest = findViewById(R.id.testButton);
@@ -256,4 +264,23 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             mResultView.setVisibility(View.VISIBLE);
         });
     }
+
+    @Override
+    public void onTextToSpeechReady() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                texttospeech.speak(textmainmenu);
+            }
+        }, 3000);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                texttospeech.speak(textfindpositioning);
+            }
+        }, 10000);
+//            texttospeech.speak(textfindpositioning);
+
+    }
+
 }
