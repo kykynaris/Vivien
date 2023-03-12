@@ -2,7 +2,6 @@ package org.pytorch.demo.objectdetection;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -11,21 +10,19 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONException;
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
@@ -41,7 +38,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
         implements Runnable, VoiceControl.TextToSpeechListener {
@@ -101,24 +97,6 @@ public class MainActivity extends AppCompatActivity
 
         //TTS
         texttospeech = new VoiceControl(this, this);
-//        texttospeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-//            @Override
-//            public void onInit(int i) {
-//
-//                // if No error is found then only it will run
-//                if(i!=TextToSpeech.ERROR){
-//                    // To Choose language of speech
-//                    texttospeech.setLanguage(Locale.ENGLISH);
-//                    new Handler().postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            texttospeech.speak(textmainmenu, TextToSpeech.QUEUE_FLUSH, null);
-//                        }
-//                    }, 3000);
-//                    texttospeech.speak(textfindpositioning, TextToSpeech.QUEUE_FLUSH, null);
-//                }
-//            }
-//        });
 
         //Button RSSI
         final Button buttonTest = findViewById(R.id.testButton);
@@ -134,29 +112,19 @@ public class MainActivity extends AppCompatActivity
         final Button buttonSelect = findViewById(R.id.selectButton);
         buttonSelect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mResultView.setVisibility(View.INVISIBLE);
-
-                final CharSequence[] options = { "Choose from Photos", "Take Picture", "Cancel" };
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("New Test Image");
-
-                builder.setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int item) {
-                        if (options[item].equals("Take Picture")) {
-                            Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(takePicture, 0);
+                    try {
+                        InputStream inputStream = getAssets().open("RSSI.json");
+                        CompareJson comparator = new CompareJson(inputStream);
+                        boolean nameMatched = comparator.compare("name", "John Smith");
+                        boolean ageMatched = comparator.compare("age", 30);
+                        if (nameMatched && ageMatched) {
+                            System.out.print("Match");
+                        } else {
+                            System.out.print("Not Match");
                         }
-                        else if (options[item].equals("Choose from Photos")) {
-                            Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                            startActivityForResult(pickPhoto , 1);
-                        }
-                        else if (options[item].equals("Cancel")) {
-                            dialog.dismiss();
-                        }
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
                     }
-                });
-                builder.show();
             }
         });
 
@@ -265,6 +233,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+
     @Override
     public void onTextToSpeechReady() {
         new Handler().postDelayed(new Runnable() {
@@ -278,9 +247,23 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 texttospeech.speak(textfindpositioning);
             }
-        }, 10000);
-//            texttospeech.speak(textfindpositioning);
-
+        }, 8000);
     }
+
+//    public void CompareJson() {
+//        try {
+//            InputStream inputStream = getAssets().open("myfile.json");
+//            CompareJson comparator = new CompareJson(inputStream);
+//            boolean nameMatched = comparator.compare("name", "John Smith");
+//            boolean ageMatched = comparator.compare("age", 30);
+//            if (nameMatched && ageMatched) {
+//                // Values match
+//            } else {
+//                // Values do not match
+//            }
+//        } catch (IOException | JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 }

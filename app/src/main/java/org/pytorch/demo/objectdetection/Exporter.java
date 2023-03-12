@@ -1,6 +1,5 @@
 package org.pytorch.demo.objectdetection;
 
-import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.os.Environment;
 import android.util.Log;
@@ -12,9 +11,10 @@ import com.google.gson.JsonIOException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class WifiListExporter {
+public class Exporter {
 
     private static final String TAG = "WifiListExporter";
     private String BSSID_text;
@@ -36,6 +36,24 @@ public class WifiListExporter {
             fileWriter.write(jsonString);
             fileWriter.close();
             Log.i(TAG, "WiFi list exported to file: " + file.getAbsolutePath());
+            return true;
+        } catch (JsonIOException | IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean exportObjectToJson(ArrayList<Result> object, String fileName) {
+        // Convert the WiFi list to JSON format
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonString = gson.toJson(object);
+
+        // Save the JSON string to a file in internal storage
+        try {
+            File file = new File( pathdir , fileName);
+            FileWriter fileWriter = new FileWriter(file);
+            fileWriter.write(jsonString);
+            fileWriter.close();
             return true;
         } catch (JsonIOException | IOException e) {
             e.printStackTrace();

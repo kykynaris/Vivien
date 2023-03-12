@@ -55,6 +55,8 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
     protected void applyToUiAnalyzeImageResult(AnalysisResult result) {
         mResultView.setResults(result.mResults);
         mResultView.invalidate();
+
+        Exporter.exportObjectToJson(result.mResults, "objectlist.json");
     }
 
     private Bitmap imgToBitmap(Image image) {

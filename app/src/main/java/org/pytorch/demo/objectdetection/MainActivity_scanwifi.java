@@ -7,10 +7,8 @@ import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -23,9 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +72,7 @@ public class MainActivity_scanwifi extends AppCompatActivity {
             wifiListAdapter.updateWifiList(wifiList);
         }, 1000);
         // Export Wi-Fi list to JSON file
-        WifiListExporter.exportWifiListToJson( wifiList, "wifilist.json");
+        Exporter.exportWifiListToJson( wifiList, "wifilist.json");
     }
 
     @Override
