@@ -4,47 +4,33 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONException;
-import org.pytorch.IValue;
-import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
-import org.pytorch.Tensor;
-import org.pytorch.torchvision.TensorImageUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements Runnable, VoiceControl.TextToSpeechListener {
     private int mImageIndex = 0;
 
     private static String[] checkpermission = {Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE , Manifest.permission.CAMERA };
+            Manifest.permission.WRITE_EXTERNAL_STORAGE , Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION };
 
     private ImageView mImageView;
     private ResultView mResultView;
@@ -80,12 +66,16 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
-            ActivityCompat.requestPermissions(this, checkpermission , 1);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, checkpermission, 1);
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         }
 
         setContentView(R.layout.activity_main);
@@ -112,19 +102,16 @@ public class MainActivity extends AppCompatActivity
         final Button buttonSelect = findViewById(R.id.selectButton);
         buttonSelect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                    try {
-                        InputStream inputStream = getAssets().open("RSSI.json");
-                        CompareJson comparator = new CompareJson(inputStream);
-                        boolean nameMatched = comparator.compare("name", "John Smith");
-                        boolean ageMatched = comparator.compare("age", 30);
-                        if (nameMatched && ageMatched) {
-                            System.out.print("Match");
-                        } else {
-                            System.out.print("Not Match");
-                        }
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
-                    }
+                TextView resultTextView = null;
+                Context context = null;
+                CompareJson task = new CompareJson(
+                        context, // The context of your activity
+                        "RSSI.json", // The name of the JSON file in the assets folder
+                        "wifilist.json", // The name of the JSON file in the internal storage
+                        "my_key", // The key for the value you want to compare
+                        resultTextView // The TextView to show the result
+                );
+                task.execute();
             }
         });
 
@@ -132,106 +119,116 @@ public class MainActivity extends AppCompatActivity
         final Button buttonLive = findViewById(R.id.liveButton);
         buttonLive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-              final Intent intent = new Intent(MainActivity.this, ObjectDetectionActivity.class);
-              startActivity(intent);
+                final Intent intent = new Intent(MainActivity.this, ObjectDetectionActivity.class);
+                startActivity(intent);
             }
         });
 
-        mButtonDetect = findViewById(R.id.detectButton);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-        mButtonDetect.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mButtonDetect.setEnabled(false);
-                mProgressBar.setVisibility(ProgressBar.VISIBLE);
-                mButtonDetect.setText(getString(R.string.run_model));
-
-                mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
-                mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
-
-                mIvScaleX = (mBitmap.getWidth() > mBitmap.getHeight() ? (float)mImageView.getWidth() / mBitmap.getWidth() : (float)mImageView.getHeight() / mBitmap.getHeight());
-                mIvScaleY  = (mBitmap.getHeight() > mBitmap.getWidth() ? (float)mImageView.getHeight() / mBitmap.getHeight() : (float)mImageView.getWidth() / mBitmap.getWidth());
-
-                mStartX = (mImageView.getWidth() - mIvScaleX * mBitmap.getWidth())/2;
-                mStartY = (mImageView.getHeight() -  mIvScaleY * mBitmap.getHeight())/2;
-
-                Thread thread = new Thread(MainActivity.this);
-                thread.start();
-            }
-        });
-
-        try {
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "yolov5s.torchscript.ptl"));
-            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
-            String line;
-            List<String> classes = new ArrayList<>();
-            while ((line = br.readLine()) != null) {
-                classes.add(line);
-            }
-            PrePostProcessor.mClasses = new String[classes.size()];
-            classes.toArray(PrePostProcessor.mClasses);
-        } catch (IOException e) {
-            Log.e("Object Detection", "Error reading assets", e);
-            finish();
-        }
+//        //Button Live
+//        final Button mButtonDetect = findViewById(R.id.detectButton);
+//        buttonLive.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                final Intent intent = new Intent(MainActivity.this, .class);
+//                startActivity(intent);
+//            }
+//        });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != RESULT_CANCELED) {
-            switch (requestCode) {
-                case 0:
-                    if (resultCode == RESULT_OK && data != null) {
-                        mBitmap = (Bitmap) data.getExtras().get("data");
-                        Matrix matrix = new Matrix();
-                        matrix.postRotate(90.0f);
-                        mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
-                        mImageView.setImageBitmap(mBitmap);
-                    }
-                    break;
-                case 1:
-                    if (resultCode == RESULT_OK && data != null) {
-                        Uri selectedImage = data.getData();
-                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                        if (selectedImage != null) {
-                            Cursor cursor = getContentResolver().query(selectedImage,
-                                    filePathColumn, null, null, null);
-                            if (cursor != null) {
-                                cursor.moveToFirst();
-                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                                String picturePath = cursor.getString(columnIndex);
-                                mBitmap = BitmapFactory.decodeFile(picturePath);
-                                Matrix matrix = new Matrix();
-                                matrix.postRotate(90.0f);
-                                mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
-                                mImageView.setImageBitmap(mBitmap);
-                                cursor.close();
-                            }
-                        }
-                    }
-                    break;
-            }
-        }
-    }
+//        mButtonDetect = findViewById(R.id.detectButton);
+//        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+//        mButtonDetect.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                mButtonDetect.setEnabled(false);
+//                mProgressBar.setVisibility(ProgressBar.VISIBLE);
+//                mButtonDetect.setText(getString(R.string.run_model));
+//
+//                mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
+//                mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
+//
+//                mIvScaleX = (mBitmap.getWidth() > mBitmap.getHeight() ? (float)mImageView.getWidth() / mBitmap.getWidth() : (float)mImageView.getHeight() / mBitmap.getHeight());
+//                mIvScaleY  = (mBitmap.getHeight() > mBitmap.getWidth() ? (float)mImageView.getHeight() / mBitmap.getHeight() : (float)mImageView.getWidth() / mBitmap.getWidth());
+//
+//                mStartX = (mImageView.getWidth() - mIvScaleX * mBitmap.getWidth())/2;
+//                mStartY = (mImageView.getHeight() -  mIvScaleY * mBitmap.getHeight())/2;
+//
+//                Thread thread = new Thread(MainActivity.this);
+//                thread.start();
+//            }
+//        });
+//
+//        try {
+//            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "yolov5s.torchscript.ptl"));
+//            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
+//            String line;
+//            List<String> classes = new ArrayList<>();
+//            while ((line = br.readLine()) != null) {
+//                classes.add(line);
+//            }
+//            PrePostProcessor.mClasses = new String[classes.size()];
+//            classes.toArray(PrePostProcessor.mClasses);
+//        } catch (IOException e) {
+//            Log.e("Object Detection", "Error reading assets", e);
+//            finish();
+//        }
+//    }
 
-    @Override
-    public void run() {
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(mBitmap, PrePostProcessor.mInputWidth, PrePostProcessor.mInputHeight, true);
-        final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(resizedBitmap, PrePostProcessor.NO_MEAN_RGB, PrePostProcessor.NO_STD_RGB);
-        IValue[] outputTuple = mModule.forward(IValue.from(inputTensor)).toTuple();
-        final Tensor outputTensor = outputTuple[0].toTensor();
-        final float[] outputs = outputTensor.getDataAsFloatArray();
-        final ArrayList<Result> results =  PrePostProcessor.outputsToNMSPredictions(outputs, mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY);
-
-        runOnUiThread(() -> {
-            mButtonDetect.setEnabled(true);
-            mButtonDetect.setText(getString(R.string.detect));
-            mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-            mResultView.setResults(results);
-            mResultView.invalidate();
-            mResultView.setVisibility(View.VISIBLE);
-        });
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (resultCode != RESULT_CANCELED) {
+//            switch (requestCode) {
+//                case 0:
+//                    if (resultCode == RESULT_OK && data != null) {
+//                        mBitmap = (Bitmap) data.getExtras().get("data");
+//                        Matrix matrix = new Matrix();
+//                        matrix.postRotate(90.0f);
+//                        mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
+//                        mImageView.setImageBitmap(mBitmap);
+//                    }
+//                    break;
+//                case 1:
+//                    if (resultCode == RESULT_OK && data != null) {
+//                        Uri selectedImage = data.getData();
+//                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+//                        if (selectedImage != null) {
+//                            Cursor cursor = getContentResolver().query(selectedImage,
+//                                    filePathColumn, null, null, null);
+//                            if (cursor != null) {
+//                                cursor.moveToFirst();
+//                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//                                String picturePath = cursor.getString(columnIndex);
+//                                mBitmap = BitmapFactory.decodeFile(picturePath);
+//                                Matrix matrix = new Matrix();
+//                                matrix.postRotate(90.0f);
+//                                mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
+//                                mImageView.setImageBitmap(mBitmap);
+//                                cursor.close();
+//                            }
+//                        }
+//                    }
+//                    break;
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public void run() {
+//        Bitmap resizedBitmap = Bitmap.createScaledBitmap(mBitmap, PrePostProcessor.mInputWidth, PrePostProcessor.mInputHeight, true);
+//        final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(resizedBitmap, PrePostProcessor.NO_MEAN_RGB, PrePostProcessor.NO_STD_RGB);
+//        IValue[] outputTuple = mModule.forward(IValue.from(inputTensor)).toTuple();
+//        final Tensor outputTensor = outputTuple[0].toTensor();
+//        final float[] outputs = outputTensor.getDataAsFloatArray();
+//        final ArrayList<Result> results =  PrePostProcessor.outputsToNMSPredictions(outputs, mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY);
+//
+//        runOnUiThread(() -> {
+//            mButtonDetect.setEnabled(true);
+//            mButtonDetect.setText(getString(R.string.detect));
+//            mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+//            mResultView.setResults(results);
+//            mResultView.invalidate();
+//            mResultView.setVisibility(View.VISIBLE);
+//        });
+//    }
 
 
     @Override
@@ -248,6 +245,11 @@ public class MainActivity extends AppCompatActivity
                 texttospeech.speak(textfindpositioning);
             }
         }, 8000);
+    }
+
+    @Override
+    public void run() {
+
     }
 
 //    public void CompareJson() {
