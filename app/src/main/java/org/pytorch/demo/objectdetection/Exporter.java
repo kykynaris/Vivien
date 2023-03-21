@@ -43,6 +43,25 @@ public class Exporter {
         }
     }
 
+    public static boolean exportWifidataToJson(List<WifiData> wifiDataList , String fileName) {
+        // Convert the WiFi list to JSON format
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(wifiDataList);
+
+        // Save the JSON string to a file in internal storage
+        try {
+            File file = new File( pathdir , fileName);
+            FileWriter fileWriter2 = new FileWriter(file , false);
+            fileWriter2.write(jsonString);
+            fileWriter2.close();
+            Log.i(TAG, "WiFi list exported to file: " + file.getAbsolutePath());
+            return true;
+        }catch (JsonIOException | IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean exportObjectToJson(ArrayList<Result> object, String fileName) {
         // Convert the WiFi list to JSON format
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
