@@ -11,4 +11,5 @@
     <string name="for_visual_impairment">for_visual_impairment</string>
     <string name="forvisualimpairment">for visual impairment</string>
     <string name="indoornavigation">Indoor Navigation</string>
+    <string name="your_current_location_has_been_successfully_detected">Your current location has been successfully detected.</string>
 </resources>

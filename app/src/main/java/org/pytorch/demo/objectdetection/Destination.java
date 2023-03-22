@@ -111,21 +111,28 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
 
     }
 
+
     @Override
     public void onTextToSpeechReady() {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                texttospeech.speak("Vivien is asking about your desired destination, where would you like to go?");
+                texttospeech.speak("Your current position has been successfully detected");
             }
         }, 1000);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                texttospeech.speak("Vivien is asking about your desired destination, where would you like to go?");
+            }
+        }, 3000);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 final Intent speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 speechRecognizer.startListening(speechRecognizerIntent);
             }
-        }, 5975);
+        }, 9000);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -136,14 +143,14 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                 texttospeech.speak(dest);
                 texttospeech.speak("Please confirm your destination by answering with a 'yes' or 'no'");
             }
-        }, 11000);
+        }, 15000);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 final Intent speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 speechRecognizer.startListening(speechRecognizerIntent);
             }
-        }, 18500);
+        }, 23000);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -152,13 +159,27 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
 
                 if (text.equals("yes")){
                     texttospeech.speak("Vivien has received your destination, please allow me a moment to process your routing.");
+                }
+                else {
+                    onTextToSpeechReady();
+                }
+            }
+        }, 27000);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String text = editText.getText().toString();
+                Log.i("confirm", "your text is " + text);
+
+                if (text.equals("yes")){
+                    texttospeech.speak("Vivien is about to turn on your camera to detect an object");
                     Routing();
                 }
                 else {
                     onTextToSpeechReady();
                 }
             }
-        }, 22000);
+        }, 30000);
     }
 
     public void Routing(){
@@ -168,7 +189,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                 Intent intent = new Intent(Destination.this, ObjectCollisionActivity.class);
                 startActivity(intent);
             }
-        }, 10000);
+        }, 5000);
     }
 
 }

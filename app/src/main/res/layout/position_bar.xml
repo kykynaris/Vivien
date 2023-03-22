@@ -12,6 +12,7 @@
             android:layout_width="wrap_content"
             android:layout_height="45dp"
             android:text="Find current position"
+
             android:textColor="#FFFF"
             android:textSize="20dp"
             android:layout_centerHorizontal="true"

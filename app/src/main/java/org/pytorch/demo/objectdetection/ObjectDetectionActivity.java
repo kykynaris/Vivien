@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetectionActivity.AnalysisResult> implements VoiceControl.TextToSpeechListener{
+public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetectionActivity.AnalysisResult>{
     private Module mModule = null;
     private ResultView mResultView;
     private VoiceControl texttospeech;
@@ -43,6 +43,13 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
 
     @Override
     protected int getContentViewLayoutId() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(ObjectDetectionActivity.this, Destination.class);
+                startActivity(intent);
+            }
+        }, 10000);
         return R.layout.activity_object_detection;
     }
 
@@ -116,27 +123,21 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
         final ArrayList<Result> results = PrePostProcessor.outputsToNMSPredictions(outputs, imgScaleX, imgScaleY, ivScaleX, ivScaleY, 0, 0);
         return new AnalysisResult(results);
     }
-    @Override
-    public void onTextToSpeechReady() {
-        texttospeech = new VoiceControl(this, this);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                texttospeech.speak("Hello, my name is Vivian. I am your navigator ");
-            }
-        }, 3000);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                texttospeech.speak("Vivian would like to check your current position for a moment.");
-            }
-        }, 7000);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(ObjectDetectionActivity.this, Destination.class);
-                startActivity(intent);
-            }
-        }, 11000);
-    }
+//    @Override
+//    public void onTextToSpeechReady() {
+//        texttospeech = new VoiceControl(this, this);
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                texttospeech.speak("Your current position has been successfully detected");
+//            }
+//        }, 5000);
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Intent intent = new Intent(ObjectDetectionActivity.this, Destination.class);
+//                startActivity(intent);
+//            }
+//        }, 10000);
+//    }
 }

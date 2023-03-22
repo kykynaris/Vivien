@@ -85,7 +85,7 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                texttospeech.speak("Vivian would like to check your current position for a moment.");
+                texttospeech.speak("Vivian would like to check your current position and please hold the phone for a moment.");
             }
         }, 7000);
         new Handler().postDelayed(new Runnable() {
@@ -119,6 +119,6 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
                 Intent intent = new Intent(Init.this, ObjectDetectionActivity.class);
                 startActivity(intent);
             }
-        }, 11000);
+        }, 12000);
     }
 }
