@@ -134,7 +134,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
 
                 texttospeech.speak("Your destination is");
                 texttospeech.speak(dest);
-                texttospeech.speak("Do you confirm your destination, by saying yes or no ");
+                texttospeech.speak("Please confirm your destination by answering with a 'yes' or 'no'");
             }
         }, 11000);
         new Handler().postDelayed(new Runnable() {
@@ -143,7 +143,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                 final Intent speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 speechRecognizer.startListening(speechRecognizerIntent);
             }
-        }, 17500);
+        }, 18500);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -151,14 +151,24 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                 Log.i("confirm", "your text is " + text);
 
                 if (text.equals("yes")){
-                    Intent intent = new Intent(Destination.this, ObjectCollisionActivity.class);
-                    startActivity(intent);
+                    texttospeech.speak("Vivien has received your destination, please allow me a moment to process your routing.");
+                    Routing();
                 }
                 else {
                     onTextToSpeechReady();
                 }
             }
-        }, 21000);
+        }, 22000);
+    }
+
+    public void Routing(){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(Destination.this, ObjectCollisionActivity.class);
+                startActivity(intent);
+            }
+        }, 10000);
     }
 
 }

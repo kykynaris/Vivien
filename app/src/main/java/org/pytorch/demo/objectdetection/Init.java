@@ -79,7 +79,7 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                texttospeech.speak("Hello, my name is Vivian. I am your navigator ");
+                texttospeech.speak("Hello, my name is Vivian. I am your navigator");
             }
         }, 3000);
         new Handler().postDelayed(new Runnable() {
