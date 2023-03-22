@@ -1,6 +1,5 @@
 package org.pytorch.demo.objectdetection;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -8,7 +7,6 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
-import android.os.Handler;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.ViewStub;
@@ -28,10 +26,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetectionActivity.AnalysisResult> implements VoiceControl.TextToSpeechListener{
+public class ObjectCollisionActivity extends AbstractCameraXActivity<ObjectCollisionActivity.AnalysisResult> {
     private Module mModule = null;
     private ResultView mResultView;
-    private VoiceControl texttospeech;
 
     static class AnalysisResult {
         private final ArrayList<Result> mResults;
@@ -59,7 +56,7 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
         mResultView.setResults(result.mResults);
         mResultView.invalidate();
 
-        Exporter.exportObjectToJson(result.mResults, "objectlist.json");
+        Exporter.exportObjectToJson(result.mResults, "objects.json");
     }
 
     private Bitmap imgToBitmap(Image image) {
@@ -115,28 +112,5 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
 
         final ArrayList<Result> results = PrePostProcessor.outputsToNMSPredictions(outputs, imgScaleX, imgScaleY, ivScaleX, ivScaleY, 0, 0);
         return new AnalysisResult(results);
-    }
-    @Override
-    public void onTextToSpeechReady() {
-        texttospeech = new VoiceControl(this, this);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                texttospeech.speak("Hello, my name is Vivian. I am your navigator ");
-            }
-        }, 3000);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                texttospeech.speak("Vivian would like to check your current position for a moment.");
-            }
-        }, 7000);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(ObjectDetectionActivity.this, Destination.class);
-                startActivity(intent);
-            }
-        }, 11000);
     }
 }

@@ -112,10 +112,11 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonLive = findViewById(R.id.liveButton);
         buttonLive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                final Intent intent = new Intent(MainActivity.this, ObjectDetectionActivity.class);
+                final Intent intent = new Intent(MainActivity.this, Destination.class);
                 startActivity(intent);
             }
         });
+
 
 //        mButtonDetect = findViewById(R.id.detectButton);
 //        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
