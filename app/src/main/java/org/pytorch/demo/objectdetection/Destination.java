@@ -9,7 +9,6 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -23,18 +22,15 @@ import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 
 public class Destination extends AppCompatActivity implements VoiceControl.TextToSpeechListener {
+
+//    Initial TextToSpeech
     private VoiceControl texttospeech;
     EditText editText = null;
     ImageButton imageButton;
 
-    SpeechRecognizer speechRecognizer;
-//    SwipeListener swipeListener;
-
+//    Initial SpeechToText
     int count = 0;
-    private float x1,x2,y1,y2;
-    private static int MIN_DISTANCE =150;
-    //        swipeListener = new SwipeListener();
-    private GestureDetector gestureDetector;
+    SpeechRecognizer speechRecognizer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +41,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
         imageButton = findViewById(R.id.speech);
         editText = findViewById(R.id.destination);
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 2);
         }
 
@@ -138,7 +134,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
 
                 texttospeech.speak("Your destination is");
                 texttospeech.speak(dest);
-                texttospeech.speak("Do you confirm your destination");
+                texttospeech.speak("Do you confirm your destination, by saying yes or no ");
             }
         }, 11000);
         new Handler().postDelayed(new Runnable() {
@@ -147,7 +143,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                 final Intent speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 speechRecognizer.startListening(speechRecognizerIntent);
             }
-        }, 16500);
+        }, 17500);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -162,7 +158,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                     onTextToSpeechReady();
                 }
             }
-        }, 20000);
+        }, 21000);
     }
 
 }
