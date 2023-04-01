@@ -28,8 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private int mImageIndex = 0;
-
+    private int mImageIndex = 0;;
     private static String[] checkpermission = {Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE ,Manifest.permission.MANAGE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION };
 
@@ -43,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 //    private VoiceControl texttospeech;
 //    private String textmainmenu = "Hello, my name is Vivian. I am your guide";
 //    private String textfindpositioning = "Vivian would like to check your current position for a moment.";
+
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);

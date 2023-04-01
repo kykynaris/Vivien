@@ -3,12 +3,15 @@ package org.pytorch.demo.objectdetection;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -21,19 +24,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity_scanwifi extends AppCompatActivity {
 
     private static final int PERMISSIONS_REQUEST_CODE = 100;
-    private static String[] CheckPermission = {Manifest.permission.ACCESS_FINE_LOCATION , Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE , Manifest.permission.CHANGE_WIFI_STATE};
+    private static String[] CheckPermission = {Manifest.permission.ACCESS_FINE_LOCATION , Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE , Manifest.permission.CHANGE_WIFI_STATE};
     private WifiManager wifiManager;
+    ///////////////////////////////////////////////////////////////
+    private List<WifiData> wifiDataList = new ArrayList<>();
+    private List<ScanResult> scanResults;
+    /////////////////////////////////////////////////////////////////
     private List<ScanResult> wifiList;
     private WifiListAdapter wifiListAdapter;
     private Handler handler = new Handler(Looper.getMainLooper());
     private Gson gson;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +53,16 @@ public class MainActivity_scanwifi extends AppCompatActivity {
 
         // Initialize Gson
         gson = new GsonBuilder().setPrettyPrinting().create();
+
+        // Initialize IntenalPath
+        PackageManager m = getPackageManager();
+        String s = getPackageName();
+        try {
+            PackageInfo p = m.getPackageInfo(s, 0);
+            s = p.applicationInfo.dataDir;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.w("Package", "Error Package name not found ", e);
+        }
 
         // Check if Wi-Fi permissions are granted
         Button scanButton = findViewById(R.id.scan_Button);
@@ -67,12 +88,27 @@ public class MainActivity_scanwifi extends AppCompatActivity {
     private void scanWifi() {
         wifiManager.startScan();
 
-        handler.postDelayed(() -> {
-            wifiList = wifiManager.getScanResults();
-            wifiListAdapter.updateWifiList(wifiList);
-        }, 1000);
+        scanResults = wifiManager.getScanResults();
+        JSONObject wifiJson = new JSONObject();
+        try {
+            for (ScanResult scanResult : scanResults) {
+                if (scanResult.level >= -80) { // filter out RSSI less than -80
+                    wifiJson.put(scanResult.BSSID, scanResult.level); // Add each BSSID and RSSI value to the JSONObject
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        for (ScanResult scanResult : scanResults) {
+            WifiData wifiData = new WifiData();
+            wifiData.setBssid(scanResult.BSSID);
+            wifiData.setSignalStrength(scanResult.level);
+            wifiDataList.add(wifiData);
+        }
+
         // Export Wi-Fi list to JSON file
-        Exporter.exportWifiListToJson( wifiList, "wifilist.json");
+        Exporter.exportWifiListToJson( scanResults, "wifilist.json");
+        Exporter.exportWifidataToJson( wifiDataList, "WifiData.json" , wifiJson);
     }
 
     @Override

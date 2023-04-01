@@ -41,7 +41,6 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiLi
     public void updateWifiList(List<ScanResult> newWifiList) {
         wifiList.clear();
         wifiList.addAll(newWifiList);
-        notifyDataSetChanged();
     }
 
     public static class WifiListViewHolder extends RecyclerView.ViewHolder {

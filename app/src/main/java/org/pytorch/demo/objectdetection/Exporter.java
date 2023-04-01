@@ -7,6 +7,10 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,12 +21,8 @@ import java.util.List;
 public class Exporter {
 
     private static final String TAG = "WifiListExporter";
-    private String BSSID_text;
-    private String SSID_text;
-    private int level_rssi;
-    private int Epochtime;
-    private static String basedir = Environment.getExternalStorageDirectory().getAbsolutePath();
-    private static String pathdir = basedir + "/Documents/Vivien/fileJson";
+    private static File basedir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);;
+    private static String pathdir = basedir.toString() + "/Vivien/fileJson";
 
     public static boolean exportWifiListToJson(List<ScanResult> wifiList, String fileName) {
         // Convert the WiFi list to JSON format
@@ -43,16 +43,16 @@ public class Exporter {
         }
     }
 
-    public static boolean exportWifidataToJson(List<WifiData> wifiDataList , String fileName) {
+    public static boolean exportWifidataToJson(List<WifiData> wifiDataList , String fileName , JSONObject wifiJson) {
         // Convert the WiFi list to JSON format
         Gson gson = new Gson();
-        String jsonString = gson.toJson(wifiDataList);
+//        String jsonString = gson.toJson(wifiJson);
 
         // Save the JSON string to a file in internal storage
         try {
             File file = new File( pathdir , fileName);
             FileWriter fileWriter2 = new FileWriter(file , false);
-            fileWriter2.write(jsonString);
+            fileWriter2.write(String.valueOf(wifiJson));
             fileWriter2.close();
             Log.i(TAG, "WiFi list exported to file: " + file.getAbsolutePath());
             return true;
