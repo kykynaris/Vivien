@@ -33,6 +33,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetectionActivity.AnalysisResult>{
     private Module mModule = null;
@@ -139,6 +142,31 @@ public class ObjectDetectionActivity extends AbstractCameraXActivity<ObjectDetec
                 Log.i("JSON Count", "Count of window " + ": " + count4);
                 Log.i("JSON Count", "Count of door "+ ": " + count5);
                 Log.i("JSON Count", "Count of object " + ": " + count6);
+
+                JSONArray jsonArray1 = new JSONArray();
+                // Add key-value pairs to the JSON object
+                jsonArray1.put("bench: " + count1);
+                jsonArray1.put("chair: " + count2);
+                jsonArray1.put("table: " + count3);
+                jsonArray1.put("window: " + count4);
+                jsonArray1.put("door: " + count5);
+                jsonArray1.put("object: " + count6);
+
+                Map<String, Integer> map = new LinkedHashMap<>();
+                for (int i = 0; i < jsonArray1.length(); i++) {
+                    String[] keyValue = jsonArray1.getString(i).split(": ");
+                    String key = keyValue[0];
+                    int value = Integer.parseInt(keyValue[1]);
+                    map.put(key, value);
+                }
+
+                List<Map<String, Integer>> resultList = new ArrayList<>();
+                resultList.add(map);
+
+                Exporter.exportCountObjectToJson(resultList,"CountObject.json");
+
+
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
