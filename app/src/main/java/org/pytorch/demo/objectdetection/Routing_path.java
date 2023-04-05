@@ -1,5 +1,6 @@
 package org.pytorch.demo.objectdetection;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -17,9 +18,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-public class Routing extends AppCompatActivity {
+public class Routing extends Activity {
     private final Map<String, Map<String, Integer>> graph;
-    private TextView shortestPathText;
     public Routing(Map<String, Map<String, Integer>> graph) {
         this.graph = graph;
     }
@@ -88,7 +88,7 @@ public class Routing extends AppCompatActivity {
         Button button = findViewById(R.id.routing);
 
         // Retrieve the TextView
-        shortestPathText = findViewById(R.id.path);
+        TextView shortestPathText= findViewById(R.id.path);
 
         // Define the graph
         Map<String, Map<String, Integer>> graph = new HashMap<>();

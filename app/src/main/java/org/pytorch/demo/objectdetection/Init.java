@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -26,6 +27,8 @@ import com.google.gson.JsonParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.pytorch.LiteModuleLoader;
+import org.pytorch.Module;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,6 +42,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -50,11 +54,33 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
     private WifiManager wifiManager;
     private List<ScanResult> scanResults;
     private List<WifiData> wifiDataList = new ArrayList<>();
+    private Bitmap mBitmap = null;
+    private Module mModule = null;
 
     private static final File basedir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);;
     private static final String pathdir = basedir.toString() + "/Vivien/fileJson";
 
+    public static String finalLocationName;
 
+
+    public static String assetFilePath(Context context, String assetName) throws IOException {
+        File file = new File(context.getFilesDir(), assetName);
+        if (file.exists() && file.length() > 0) {
+            return file.getAbsolutePath();
+        }
+
+        try (InputStream is = context.getAssets().open(assetName)) {
+            try (OutputStream os = new FileOutputStream(file)) {
+                byte[] buffer = new byte[4 * 1024];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, read);
+                }
+                os.flush();
+            }
+            return file.getAbsolutePath();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +106,20 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
 //        TTS
         texttospeech = new VoiceControl(this, this);
 
-//        // file Access folder
-//        File directory = getApplicationContext().getFilesDir();
-//        File file = new File(directory, "my_folder/my_file.txt");
+        try {
+            mModule = LiteModuleLoader.load(Init.assetFilePath(getApplicationContext(), "yolov5s.torchscript.ptl"));
+            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
+            String line;
+            List<String> classes = new ArrayList<>();
+            while ((line = br.readLine()) != null) {
+                classes.add(line);
+            }
+            PrePostProcessor.mClasses = new String[classes.size()];
+            classes.toArray(PrePostProcessor.mClasses);
+        } catch (IOException e) {
+            Log.e("Object Detection", "Error reading assets", e);
+            finish();
+        }
 
     }
 
@@ -116,10 +153,14 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
                     return;
                 }
                 scanResults = wifiManager.getScanResults();
+                List<String> ssidsToFilter = Arrays.asList("@JumboPlus", "@JumboPlus5GHz");
+                final int minRssi = -80; // minimum RSSI in dBm
                 JSONObject wifiJson = new JSONObject();
                 try {
                     for (ScanResult scanResult : scanResults) {
-                        if (scanResult.level >= -80) { // filter out RSSI less than -80
+                        if (scanResult.level >= minRssi
+                                && ssidsToFilter.contains(scanResult.SSID)
+                        ) { // filter out RSSI less than -80 and filter specified ssid
                             wifiJson.put(scanResult.BSSID, scanResult.level); // Add each BSSID and RSSI value to the JSONObject
                         }
                     }
@@ -206,19 +247,19 @@ public class Init extends AppCompatActivity implements VoiceControl.TextToSpeech
                 // Output location name to logcat
                 if (locationName != null) {
                     Log.d(TAG, "Location: " + locationName);
-                    String finalLocationName = locationName;
+                    finalLocationName = locationName;
                     TextToSpeech texts = new TextToSpeech(Init.this , new TextToSpeech.OnInitListener() {
                         @Override
                         public void onInit(int status) {
                             if (status == TextToSpeech.SUCCESS) {
                                 // Speak the location name
-                                texttospeech.speak("Your location is "+finalLocationName);
+//                                texttospeech.speak("Your location is "+ finalLocationName);
                             }
                         }
                     });
                 } else {
                     Log.d(TAG, "Location not found");
-                    texttospeech.speak("Location Not found");
+//                    texttospeech.speak("Location Not found");
                 }
 
 

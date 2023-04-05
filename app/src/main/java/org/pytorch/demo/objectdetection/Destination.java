@@ -32,6 +32,8 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
     int count = 0;
     SpeechRecognizer speechRecognizer;
 
+    private String positioning = Init.finalLocationName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,7 +119,7 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                texttospeech.speak("Your current position has been successfully detected");
+                texttospeech.speak("Your current position is " + positioning );
             }
         }, 1000);
         new Handler().postDelayed(new Runnable() {
@@ -157,29 +159,30 @@ public class Destination extends AppCompatActivity implements VoiceControl.TextT
                 String text = editText.getText().toString();
                 Log.i("confirm", "your text is " + text);
 
-                if (text.equals("yes")){
+                if (text.equals("yes") || text.equals("Yes")){
                     texttospeech.speak("Vivien has received your destination, please allow me a moment to process your routing.");
-                }
-                else {
-                    onTextToSpeechReady();
-                }
-            }
-        }, 27000);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                String text = editText.getText().toString();
-                Log.i("confirm", "your text is " + text);
-
-                if (text.equals("yes")){
-                    texttospeech.speak("Vivien is about to turn on your camera to detect an object");
                     Routing();
                 }
                 else {
                     onTextToSpeechReady();
                 }
             }
-        }, 30000);
+        }, 27000);
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                String text = editText.getText().toString();
+//                Log.i("confirm", "your text is " + text);
+//
+//                if (text.equals("yes")){
+//                    texttospeech.speak("Vivien is about to turn on your camera to detect an object");
+//                    Routing();
+//                }
+//                else {
+//                    onTextToSpeechReady();
+//                }
+//            }
+//        }, 30000);
     }
 
     public void Routing(){
